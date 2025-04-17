@@ -17,6 +17,8 @@
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.11.5</jjwt.version>
+        <flyway.version>9.16.0</flyway.version>
+        <mapper.version>3.2.0</mapper.version>
     </properties>
 
     <dependencies>
@@ -49,7 +51,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-
 
         <!-- Database -->
         <dependency>
@@ -107,7 +108,7 @@
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>3.2.0</version>
+            <version>${mapper.version}</version>
         </dependency>
 
     </dependencies>
@@ -129,7 +130,7 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>9.16.0</version>
+                <version>${flyway.version}</version>
                 <configuration>
                 </configuration>
                 <dependencies>
@@ -142,6 +143,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>
