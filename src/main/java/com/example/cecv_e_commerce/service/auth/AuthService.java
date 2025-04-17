@@ -1,4 +1,4 @@
-package com.example.cecv_e_commerce.service;
+package com.example.cecv_e_commerce.service.auth;
 
 import com.example.cecv_e_commerce.domain.dto.user.AuthResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.user.LoginRequestDTO;

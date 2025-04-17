@@ -1,4 +1,4 @@
-package com.example.cecv_e_commerce.service;
+package com.example.cecv_e_commerce.service.mail;
 
 import org.springframework.stereotype.Service;
 

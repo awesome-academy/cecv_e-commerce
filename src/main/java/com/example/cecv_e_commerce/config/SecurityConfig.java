@@ -1,5 +1,6 @@
 package com.example.cecv_e_commerce.config;
 
+import com.example.cecv_e_commerce.util.SecurityConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,21 +75,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (Guess)
-                        .requestMatchers("/api/v1/auth/register",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/activate",
-                                "/api/v1/auth/forgot-password",
-                                "/api/v1/auth/reset-password").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v1/categories/**", "/api/v1/reviews/**").permitAll()
+                        .requestMatchers(SecurityConstants.PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, SecurityConstants.PUBLIC_GET_ENDPOINTS).permitAll()
                         // User endpoints (ROLE_USER)
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
-                        .requestMatchers("/api/v1/users/me/**").hasRole("USER")
-                        .requestMatchers("/api/v1/cart/**").hasRole("USER")
-                        .requestMatchers("/api/v1/orders/**").hasRole("USER")
+                        .requestMatchers(SecurityConstants.USER_ENDPOINTS).hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/{productId}/reviews").hasRole("USER")
-                        .requestMatchers("/api/v1/suggestions/**").hasRole("USER")
                         // Admin endpoints (ROLE_ADMIN)
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(SecurityConstants.ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

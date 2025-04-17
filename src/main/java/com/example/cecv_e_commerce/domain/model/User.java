@@ -49,7 +49,7 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10, columnDefinition = "ENUM('GUEST', 'USER', 'ADMIN') DEFAULT 'USER'")
+    @Column(length = 10, columnDefinition = "ENUM('USER', 'ADMIN') DEFAULT 'USER'")
     private Role role = Role.USER;
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT FALSE")

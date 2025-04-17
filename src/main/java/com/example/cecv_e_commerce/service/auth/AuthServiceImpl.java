@@ -1,4 +1,4 @@
-package com.example.cecv_e_commerce.service;
+package com.example.cecv_e_commerce.service.auth;
 
 import com.example.cecv_e_commerce.config.JwtTokenProvider;
 import com.example.cecv_e_commerce.domain.dto.user.AuthResponseDTO;
@@ -10,6 +10,7 @@ import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.repository.UserRepository;
 import com.example.cecv_e_commerce.exception.BadRequestException;
+import com.example.cecv_e_commerce.service.mail.MailService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
