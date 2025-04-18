@@ -2,12 +2,14 @@ package com.example.cecv_e_commerce.service.impl;
 
 import com.example.cecv_e_commerce.domain.dto.product.ProductBriefDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductDetailDTO;
+import com.example.cecv_e_commerce.domain.dto.product.SearchProductRequestDTO;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.domain.model.Category;
 import com.example.cecv_e_commerce.domain.model.Product;
 import com.example.cecv_e_commerce.repository.ProductRepository;
 import com.example.cecv_e_commerce.service.ProductService;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +68,6 @@ public class ProductServiceImpl implements ProductService {
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
     }
 
-
     @Override
     public ProductDetailDTO getProductDetails(Integer productId) {
         logger.debug("Fetching product details for id: {}", productId);
@@ -77,34 +77,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductBriefDTO> searchProducts(String keyword, Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+    public Page<ProductBriefDTO> searchProducts(SearchProductRequestDTO criteria, Pageable pageable) {
         logger.debug("Searching products with criteria - keyword: '{}', categoryId: {}, minPrice: {}, maxPrice: {}, pageable: {}",
-                keyword, categoryId, minPrice, maxPrice, pageable);
-
+                criteria.getKeyword(), criteria.getCategoryId(), criteria.getMinPrice(), criteria.getMaxPrice(), pageable);
         Specification<Product> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            root.fetch("category");
 
-            if (StringUtils.hasText(keyword)) {
-                String likePattern = "%" + keyword.toLowerCase() + "%";
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("category", JoinType.LEFT);
+            }
+
+            if (StringUtils.hasText(criteria.getKeyword())) {
+                String likePattern = "%" + criteria.getKeyword().toLowerCase() + "%";
                 Predicate namePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("name").as(String.class)), likePattern);
                 Predicate descriptionPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("description").as(String.class)), likePattern);
                 predicates.add(criteriaBuilder.or(namePredicate, descriptionPredicate));
             }
 
-            if (categoryId != null) {
-                Join<Product, Category> categoryJoin = root.join("category");
-                predicates.add(criteriaBuilder.equal(categoryJoin.get("id"), categoryId));
+            if (criteria.getCategoryId() != null) {
+                Join<Product, Category> categoryJoin = root.join("category", JoinType.LEFT);
+                predicates.add(criteriaBuilder.equal(categoryJoin.get("id"), criteria.getCategoryId()));
             }
-            if (minPrice != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+
+            if (criteria.getMinPrice() != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), criteria.getMinPrice()));
             }
-            if (maxPrice != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+
+            if (criteria.getMaxPrice() != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), criteria.getMaxPrice()));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
-
         Page<Product> productPage = productRepository.findAll(spec, pageable);
         logger.debug("Found {} products matching criteria.", productPage.getTotalElements());
         List<ProductBriefDTO> dtos = productPage.getContent().stream()
