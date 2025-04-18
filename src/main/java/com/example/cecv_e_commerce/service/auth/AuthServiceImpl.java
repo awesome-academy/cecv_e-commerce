@@ -10,7 +10,6 @@ import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.repository.UserRepository;
 import com.example.cecv_e_commerce.exception.BadRequestException;
-import com.example.cecv_e_commerce.service.mail.MailService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,7 @@ import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
-
+    private static final int PASSWORD_RESET_TOKEN_EXPIRATION_HOURS = 1;
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     @Autowired
@@ -43,9 +42,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private JwtTokenProvider tokenProvider;
-
-    @Autowired
-    private MailService mailService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -78,15 +74,6 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepository.save(user);
         logger.info("User registered successfully with email: {}", savedUser.getEmail());
-
-        // Send activation email
-        try {
-            String activationLink = activationBaseUrl + "?token=" + token;
-            mailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), activationLink);
-            logger.info("Activation email sent to: {}", savedUser.getEmail());
-        } catch (Exception e) {
-            logger.error("Failed to send activation email to {}: {}", savedUser.getEmail(), e.getMessage());
-        }
     }
 
     @Override
@@ -143,17 +130,8 @@ public class AuthServiceImpl implements AuthService {
 
         String token = UUID.randomUUID().toString();
         user.setPasswordResetToken(token);
-        user.setPasswordResetDeadline(LocalDateTime.now().plusHours(1)); // Token reset after 1h
+        user.setPasswordResetDeadline(LocalDateTime.now().plusHours(PASSWORD_RESET_TOKEN_EXPIRATION_HOURS));
         userRepository.save(user);
-
-        // Send password reset email
-        try {
-            String resetLink = passwordResetBaseUrl + "?token=" + token;
-            mailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
-            logger.info("Password reset email sent to: {}", user.getEmail());
-        } catch (Exception e) {
-            logger.error("Failed to send password reset email to {}: {}", user.getEmail(), e.getMessage());
-        }
     }
 
     @Override
