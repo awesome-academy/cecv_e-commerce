@@ -2,7 +2,7 @@ package com.example.cecv_e_commerce.controller;
 
 import com.example.cecv_e_commerce.domain.dto.ApiResponse;
 import com.example.cecv_e_commerce.domain.dto.user.*;
-import com.example.cecv_e_commerce.service.auth.AuthService;
+import com.example.cecv_e_commerce.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

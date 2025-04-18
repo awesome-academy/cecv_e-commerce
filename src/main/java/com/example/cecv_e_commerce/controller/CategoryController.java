@@ -1,6 +1,6 @@
 package com.example.cecv_e_commerce.controller;
 
-import com.example.cecv_e_commerce.service.category.CategoryService;
+import com.example.cecv_e_commerce.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
 

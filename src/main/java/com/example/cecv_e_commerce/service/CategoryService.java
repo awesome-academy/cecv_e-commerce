@@ -1,4 +1,4 @@
-package com.example.cecv_e_commerce.service.category;
+package com.example.cecv_e_commerce.service;
 
 import com.example.cecv_e_commerce.domain.dto.category.CategoryDTO;
 import com.example.cecv_e_commerce.domain.dto.category.CategoriesResponseDTO;
