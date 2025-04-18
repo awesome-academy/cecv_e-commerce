@@ -1,7 +1,6 @@
 package com.example.cecv_e_commerce.exception;
 
 import com.example.cecv_e_commerce.domain.dto.ApiResponse;
-import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
     }
 
-
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
         logger.warn("Bad request: {}", ex.getMessage());
@@ -64,10 +62,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
     }
 
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse> handleGlobalException(Exception ex, WebRequest request) {
-        logger.error("An unexpected error occurred: ", ex); // Log cả stack trace
+        logger.error("An unexpected error occurred: ", ex);
         ApiResponse apiResponse = new ApiResponse(false, "An unexpected internal server error occurred.", null);
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
