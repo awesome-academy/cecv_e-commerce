@@ -1,5 +1,6 @@
 package com.example.cecv_e_commerce.domain.dto.product;
 
+import com.example.cecv_e_commerce.domain.dto.category.CategoryDTO;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,9 +12,8 @@ public class ProductDetailDTO {
     private String description;
     private String imageUrl;
     private BigDecimal price;
-    private String categoryName;
+    private CategoryDTO category;
     private Integer quantity;
-    private Integer categoryId;
     private boolean featured;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

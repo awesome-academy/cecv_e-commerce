@@ -1,5 +1,6 @@
 package com.example.cecv_e_commerce.controller;
 
+import com.example.cecv_e_commerce.constants.AppConstants;
 import com.example.cecv_e_commerce.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,6 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<ApiResponse> getAllCategories() {
         CategoriesResponseDTO categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(ApiResponse.success("Categories fetched successfully", categories));
+        return ResponseEntity.ok(ApiResponse.success(AppConstants.MSG_CATEGORIES_LIST_SUCCESS, categories));
     }
 }
