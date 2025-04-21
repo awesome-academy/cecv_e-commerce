@@ -3,10 +3,7 @@ package com.example.cecv_e_commerce.domain.dto.product;
 import lombok.*;
 import java.math.BigDecimal;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class SearchProductRequestDTO {
     private String keyword;
     private Integer categoryId;

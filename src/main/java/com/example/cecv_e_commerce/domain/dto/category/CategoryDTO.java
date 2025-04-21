@@ -3,10 +3,7 @@ package com.example.cecv_e_commerce.domain.dto.category;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class CategoryDTO {
 
     private Integer id;

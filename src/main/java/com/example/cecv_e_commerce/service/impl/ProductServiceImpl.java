@@ -37,28 +37,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
 
-    private ProductBriefDTO mapToBriefDTO(Product product) {
-        ProductBriefDTO dto = modelMapper.map(product, ProductBriefDTO.class);
-        if (product.getCategory() != null) {
-            CategoryDTO categoryDTO = modelMapper.map(product.getCategory(), CategoryDTO.class);
-            dto.setCategory(categoryDTO);
-        } else {
-            dto.setCategory(null);
-        }
-        return dto;
-    }
-
-    private ProductDetailDTO mapToDetailDTO(Product product) {
-        ProductDetailDTO dto = modelMapper.map(product, ProductDetailDTO.class);
-        if (product.getCategory() != null) {
-            CategoryDTO categoryDTO = modelMapper.map(product.getCategory(), CategoryDTO.class);
-            dto.setCategory(categoryDTO);
-        } else {
-            dto.setCategory(null);
-        }
-        return dto;
-    }
-
     @Override
     public Page<ProductBriefDTO> getFeaturedProducts(Pageable pageable) {
         logger.debug("Fetching featured products with pageable: {}", pageable);
@@ -115,5 +93,27 @@ public class ProductServiceImpl implements ProductService {
                 .map(this::mapToBriefDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
+    }
+
+    private ProductBriefDTO mapToBriefDTO(Product product) {
+        ProductBriefDTO dto = modelMapper.map(product, ProductBriefDTO.class);
+        if (product.getCategory() != null) {
+            CategoryDTO categoryDTO = modelMapper.map(product.getCategory(), CategoryDTO.class);
+            dto.setCategory(categoryDTO);
+        } else {
+            dto.setCategory(null);
+        }
+        return dto;
+    }
+
+    private ProductDetailDTO mapToDetailDTO(Product product) {
+        ProductDetailDTO dto = modelMapper.map(product, ProductDetailDTO.class);
+        if (product.getCategory() != null) {
+            CategoryDTO categoryDTO = modelMapper.map(product.getCategory(), CategoryDTO.class);
+            dto.setCategory(categoryDTO);
+        } else {
+            dto.setCategory(null);
+        }
+        return dto;
     }
 }
