@@ -4,7 +4,7 @@ import com.example.cecv_e_commerce.domain.dto.user.UserDTO;
 import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.repository.UserRepository;
-import com.example.cecv_e_commerce.service.AdminUserService;
+import com.example.cecv_e_commerce.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +20,10 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 
 @Service
-public class AdminUserServiceImpl implements AdminUserService {
+@Transactional(readOnly = true)
+public class UserServiceImpl implements UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AdminUserServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -31,7 +32,6 @@ public class AdminUserServiceImpl implements AdminUserService {
     private ModelMapper modelMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public Page<UserDTO> getAllUsers(Pageable pageable, String searchTerm, String[] sort) {
         Sort.Direction direction = Sort.Direction.fromString(sort.length > 1 ? sort[1] : "asc");
         Sort sorting = Sort.by(direction, sort[0]);
@@ -50,7 +50,6 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public UserDTO getUserById(Integer userId) {
         logger.debug("Fetching user by ID: {}", userId);
         User user = userRepository.findById(userId)
