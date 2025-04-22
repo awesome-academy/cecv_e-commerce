@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface AdminUserService {
 
-    Page<UserDTO> getAllUsers(Pageable pageable, String searchTerm);
+    Page<UserDTO> getAllUsers(Pageable pageable, String searchTerm, String[] sort);
 
     UserDTO getUserById(Integer userId);
 

@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -30,14 +32,18 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserDTO> getAllUsers(Pageable pageable, String searchTerm) {
-        logger.debug("Fetching users with pageable: {} and search term: '{}'", pageable, searchTerm);
+    public Page<UserDTO> getAllUsers(Pageable pageable, String searchTerm, String[] sort) {
+        Sort.Direction direction = Sort.Direction.fromString(sort.length > 1 ? sort[1] : "asc");
+        Sort sorting = Sort.by(direction, sort[0]);
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sorting);
+
+        logger.debug("Fetching users with pageable: {} and search term: '{}'", sortedPageable, searchTerm);
         Page<User> userPage;
 
         if (StringUtils.hasText(searchTerm)) {
-            userPage = userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(searchTerm, searchTerm, pageable);
+            userPage = userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(searchTerm, searchTerm, sortedPageable);
         } else {
-            userPage = userRepository.findAll(pageable);
+            userPage = userRepository.findAll(sortedPageable);
         }
 
         return userPage.map(user -> modelMapper.map(user, UserDTO.class));
