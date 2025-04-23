@@ -64,13 +64,7 @@ public class ProductController {
             @PathVariable Integer productId,
             @Valid @RequestBody ReviewRequestDTO reviewRequest,
             @AuthenticationPrincipal User currentUser) {
-
-        if (currentUser == null) {
-            throw new BadRequestException(AppConstants.MSG_USER_AUTHENTICATION_ERROR);
-        }
-
         ReviewResponseDTO responseData = reviewCoordinatorService.addReviewAndRating(productId, reviewRequest, currentUser);
-
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(AppConstants.MSG_REVIEW_CREATED_SUCCESS, responseData));
     }
