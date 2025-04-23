@@ -12,10 +12,16 @@ public final class AppConstants {
     public static final int DEFAULT_SEARCH_PAGE_SIZE = 12;
     public static final String DEFAULT_SORT_FIELD = "createdAt";
 
+    // Error
+    public static final String MSG_USER_AUTHENTICATION_ERROR = "User not authenticated";
+    public static final String MSG_COMMENT_PRODUCT_ERROR = "You have already commented on this product.";
+    public static final String MSG_RATE_PRODUCT_ERROR = "You have already rated this product.";
+
     // API Messages
     public static final String MSG_FEATURED_PRODUCTS_SUCCESS = "Featured products fetched successfully";
     public static final String MSG_PRODUCT_DETAIL_SUCCESS = "Product details fetched successfully";
     public static final String MSG_PRODUCTS_SEARCH_SUCCESS = "Products searched successfully";
     public static final String MSG_CATEGORIES_LIST_SUCCESS = "Categories fetched successfully";
+    public static final String MSG_REVIEW_CREATED_SUCCESS = "Review added successfully";
 
 }
