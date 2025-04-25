@@ -1,6 +1,6 @@
 package com.example.cecv_e_commerce.domain.dto.user;
 
-import com.example.cecv_e_commerce.domain.model.Role;
+import com.example.cecv_e_commerce.domain.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,5 +1,7 @@
 package com.example.cecv_e_commerce.domain.model;
 
+import com.example.cecv_e_commerce.domain.enums.MailStatus;
+import com.example.cecv_e_commerce.domain.enums.MailType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -5,7 +5,7 @@ import com.example.cecv_e_commerce.domain.dto.user.AuthResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.user.LoginRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.user.RegisterRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.user.UserDTO;
-import com.example.cecv_e_commerce.domain.model.Role;
+import com.example.cecv_e_commerce.domain.enums.Role;
 import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.exception.BadRequestException;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;

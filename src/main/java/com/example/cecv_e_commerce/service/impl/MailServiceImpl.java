@@ -1,8 +1,8 @@
 package com.example.cecv_e_commerce.service.impl;
 
+import com.example.cecv_e_commerce.domain.enums.MailStatus;
+import com.example.cecv_e_commerce.domain.enums.MailType;
 import com.example.cecv_e_commerce.domain.model.MailLog;
-import com.example.cecv_e_commerce.domain.model.MailStatus;
-import com.example.cecv_e_commerce.domain.model.MailType;
 import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.repository.MailLogRepository;
 import com.example.cecv_e_commerce.repository.UserRepository;
@@ -94,7 +94,7 @@ public class MailServiceImpl implements MailService {
             logEntry.setMailType(mailType);
             logEntry.setStatus(success ? MailStatus.SENT : MailStatus.FAILED);
             if (!success) {
-                logEntry.setErrorMessage(errorMessage != null && errorMessage.length() > 2000 ? errorMessage.substring(0, 2000) : errorMessage); // Cắt ngắn lỗi nếu quá dài
+                logEntry.setErrorMessage(errorMessage != null && errorMessage.length() > 2000 ? errorMessage.substring(0, 2000) : errorMessage);
             }
             mailLogRepository.save(logEntry);
         } catch (Exception e) {

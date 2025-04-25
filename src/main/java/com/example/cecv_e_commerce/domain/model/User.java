@@ -1,5 +1,6 @@
 package com.example.cecv_e_commerce.domain.model;
 
+import com.example.cecv_e_commerce.domain.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
