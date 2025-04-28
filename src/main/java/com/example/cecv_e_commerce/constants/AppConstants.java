@@ -22,5 +22,6 @@ public final class AppConstants {
     public static final String MSG_PRODUCTS_SEARCH_SUCCESS = "Products searched successfully";
     public static final String MSG_CATEGORIES_LIST_SUCCESS = "Categories fetched successfully";
     public static final String MSG_REVIEW_CREATED_SUCCESS = "Review added successfully";
+    public static final String MSG_REVIEWS_FETCHED_SUCCESS = "Product reviews fetched successfully";
 
 }

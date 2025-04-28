@@ -1,6 +1,7 @@
 package com.example.cecv_e_commerce.controller;
 
 import com.example.cecv_e_commerce.domain.dto.ApiResponse;
+import com.example.cecv_e_commerce.domain.dto.comment.CommentDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductBriefDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductDetailDTO;
 import com.example.cecv_e_commerce.domain.dto.product.SearchProductRequestDTO;
@@ -8,6 +9,7 @@ import com.example.cecv_e_commerce.domain.dto.review.ReviewRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.review.ReviewResponseDTO;
 import com.example.cecv_e_commerce.domain.model.User;
 import com.example.cecv_e_commerce.exception.BadRequestException;
+import com.example.cecv_e_commerce.service.CommentService;
 import com.example.cecv_e_commerce.service.ProductService;
 import com.example.cecv_e_commerce.service.ReviewCoordinatorService;
 import com.example.cecv_e_commerce.constants.AppConstants;
@@ -29,6 +31,8 @@ public class ProductController {
 
     private final ProductService productService;
     private final ReviewCoordinatorService reviewCoordinatorService;
+    private final CommentService commentService;
+
 
     @GetMapping("/featured")
     public ResponseEntity<ApiResponse> getFeaturedProducts(
@@ -67,5 +71,16 @@ public class ProductController {
         ReviewResponseDTO responseData = reviewCoordinatorService.addReviewAndRating(productId, reviewRequest, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(AppConstants.MSG_REVIEW_CREATED_SUCCESS, responseData));
+    }
+
+    @GetMapping("/{productId}/reviews")
+    public ResponseEntity<ApiResponse> getReviewsForProduct(
+            @PathVariable Integer productId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        Page<CommentDTO> commentPage = commentService.getCommentsByProductId(productId, pageable);
+
+        return ResponseEntity.ok(ApiResponse.success(AppConstants.MSG_REVIEWS_FETCHED_SUCCESS, commentPage));
     }
  }
