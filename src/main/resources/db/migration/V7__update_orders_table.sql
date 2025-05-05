@@ -1,0 +1,8 @@
+ALTER TABLE orders MODIFY status ENUM (
+    'PENDING',
+    'CONFIRMED',
+    'SHIPPED',
+    'CANCELLED',
+    'CANCEL_CONFIRMED'
+) DEFAULT 'PENDING';
+

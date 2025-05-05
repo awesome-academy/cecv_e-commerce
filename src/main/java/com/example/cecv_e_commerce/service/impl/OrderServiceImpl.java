@@ -1,11 +1,16 @@
 package com.example.cecv_e_commerce.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.example.cecv_e_commerce.domain.dto.order.OrderItemDTO;
-import com.example.cecv_e_commerce.domain.dto.order.OrderItemRequestCreateDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderItemRequestDeleteDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderItemRequestUpdateDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderPaymentDTO;
@@ -13,6 +18,7 @@ import com.example.cecv_e_commerce.domain.dto.order.OrderPaymentRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.order.OrderShippingDTO;
+import com.example.cecv_e_commerce.domain.dto.order.OrderStatusRequestDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductDTO;
 import com.example.cecv_e_commerce.domain.enums.OrderStatusEnum;
 import com.example.cecv_e_commerce.domain.model.Order;
@@ -143,9 +149,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDTO updateOrderPayment(Integer orderId, OrderPaymentRequestDTO orderPaymentRequestDTO) {
+    public OrderResponseDTO updateOrderPayment(Integer orderId,
+            OrderPaymentRequestDTO orderPaymentRequestDTO) {
         Order order = findOrderByIdAndCheckAccess(orderId, false);
-        if (order.getStatus() == OrderStatusEnum.CANCELLED || order.getStatus() == OrderStatusEnum.DELIVERED) {
+        if (order.getStatus() == OrderStatusEnum.CANCELLED
+                || order.getStatus() == OrderStatusEnum.DELIVERED) {
             throw new BadRequestException("Cannot payment for a cancelled or delivered order");
         }
 
@@ -161,13 +169,81 @@ public class OrderServiceImpl implements OrderService {
         if (orderPaymentRequestDTO.getTransactionId() != null) {
             orderPayment.setTransactionId(orderPaymentRequestDTO.getTransactionId());
         }
-        
         if (orderPaymentRequestDTO.getPaidAt() != null) {
             orderPayment.setPaidAt(orderPaymentRequestDTO.getPaidAt());
         }
 
         orderPaymentRepository.save(orderPayment);
 
+        return convertOrderToOrderResponseDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDTO updateOrderStatus(Integer orderId,
+            OrderStatusRequestDTO orderStatusRequestDTO) {
+        Order order = findOrderByIdAndCheckAccess(orderId);
+        order.setStatus(orderStatusRequestDTO.getStatusEnum());
+        order.setCancelReason(orderStatusRequestDTO.getReason());
+        orderRepository.save(order);
+
+        return convertOrderToOrderResponseDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public Page<OrderResponseDTO> getAllOrders(Pageable pageable, String[] sort, String search) {
+        User user = getCurrentUser();
+
+        Specification<Order> spec = (root, query, cb) -> {
+            if (!"ADMIN".equalsIgnoreCase(user.getRole().name())) {
+                return cb.equal(root.get("user").get("id"), user.getId());
+            }
+
+            return cb.conjunction();
+        };
+
+        if (search != null && !search.trim().isEmpty()) {
+            Specification<Order> searchSpec = (root, query, cb) -> {
+                String pattern = "%" + search.toLowerCase() + "%";
+                return cb.or(
+                        cb.like(cb.lower(root.get("orderShipping").get("recipientName")), pattern),
+                        cb.like(cb.lower(root.get("orderShipping").get("recipientPhone")), pattern),
+                        cb.like(cb.lower(root.get("orderShipping").get("addressLine1")), pattern),
+                        cb.like(cb.lower(root.get("orderShipping").get("city")), pattern),
+                        cb.like(cb.lower(root.get("status").as(String.class)), pattern));
+            };
+            spec = spec.and(searchSpec);
+        }
+
+        Sort sortSpec;
+        if (sort == null || sort.length == 0) {
+            sortSpec = Sort.by(Sort.Direction.DESC, "id");
+        } else {
+            List<Sort.Order> orders = new ArrayList<>();
+            for (String sortField : sort) {
+                String[] parts = sortField.split(",");
+                if (parts.length == 2) {
+                    String field = parts[0];
+                    String direction = parts[1];
+                    orders.add(new Sort.Order(Sort.Direction.fromString(direction), field));
+                }
+            }
+            sortSpec = Sort.by(orders);
+        }
+
+        Pageable sortedPageable =
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortSpec);
+        return orderRepository.findAll(spec, sortedPageable)
+                .map(this::convertOrderToOrderResponseDTO);
+    }
+
+
+    @Override
+    @Transactional
+    public OrderResponseDTO deleteOrder(Integer orderId) {
+        Order order = findOrderByIdAndCheckAccess(orderId);
+        orderRepository.delete(order);
         return convertOrderToOrderResponseDTO(order);
     }
 
@@ -184,6 +260,10 @@ public class OrderServiceImpl implements OrderService {
         User user = getCurrentUser();
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        if ("ADMIN".equalsIgnoreCase(user.getRole().name())) {
+            return order;
+        }
+
         if (order.getUser().getId() != user.getId()) {
             throw new ResourceNotFoundException("Order not found");
         }
@@ -252,14 +332,13 @@ public class OrderServiceImpl implements OrderService {
         OrderPaymentDTO orderPaymentDTO = null;
         if (order.getOrderPayment() != null) {
             OrderPayment orderPayment = order.getOrderPayment();
-            orderPaymentDTO = new OrderPaymentDTO(orderPayment.getId(), 
-                    orderPayment.getOrder().getId(),
-                    orderPayment.getPaymentMethod(), orderPayment.getPaymentStatus(),
-                    orderPayment.getPaymentAmount(), orderPayment.getTransactionId(),
-                    orderPayment.getPaidAt());
+            orderPaymentDTO = new OrderPaymentDTO(orderPayment.getId(),
+                    orderPayment.getOrder().getId(), orderPayment.getPaymentMethod(),
+                    orderPayment.getPaymentStatus(), orderPayment.getPaymentAmount(),
+                    orderPayment.getTransactionId(), orderPayment.getPaidAt());
         }
 
         return new OrderResponseDTO(order.getId(), order.getUser().getId(), orderItems,
-            orderShippingDTO, order.getOrderItems().size(), orderPaymentDTO);
+                orderShippingDTO, order.getOrderItems().size(), orderPaymentDTO);
     }
 }
