@@ -23,5 +23,7 @@ public final class AppConstants {
     public static final String MSG_CATEGORIES_LIST_SUCCESS = "Categories fetched successfully";
     public static final String MSG_REVIEW_CREATED_SUCCESS = "Review added successfully";
     public static final String MSG_REVIEWS_FETCHED_SUCCESS = "Product reviews fetched successfully";
+    public static final String MSG_REVENUE_STATS_SUCCESS = "Revenue statistics fetched successfully";
+    public static final String MSG_BEST_SELLING_PRODUCTS_SUCCESS = "Best selling products fetched successfully";
 
 }
