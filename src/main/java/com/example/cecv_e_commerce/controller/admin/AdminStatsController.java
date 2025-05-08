@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +24,12 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/api/v1/admin/stats")
 @RequiredArgsConstructor
 @Validated
-public class AdminStatsController {
+public class AdminStatsController extends AdminController {
 
     private final AdminStatsService adminStatsService;
     private static final Logger logger = LoggerFactory.getLogger(AdminStatsController.class);
 
     @GetMapping("/revenue")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getRevenue(
             @RequestParam(defaultValue = "monthly") String period,
             @RequestParam int year,
@@ -44,7 +42,6 @@ public class AdminStatsController {
     }
 
     @GetMapping("/best-selling-products")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getBestSellingProducts(
             @RequestParam(defaultValue = "5") @Min(1) @Max(50) int limit,
             @RequestParam(required = false, defaultValue = "all_time") String period
