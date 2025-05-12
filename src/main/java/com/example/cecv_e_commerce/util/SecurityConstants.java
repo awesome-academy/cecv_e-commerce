@@ -20,7 +20,8 @@ public class SecurityConstants {
             "/api/v1/users/me/**",
             "/api/v1/cart/**",
             "/api/v1/orders/**",
-            "/api/v1/suggestions/**"
+            "/api/v1/suggestions/**",
+            "/api/v1/products/**"
     };
 
     public static final String[] ADMIN_ENDPOINTS = {

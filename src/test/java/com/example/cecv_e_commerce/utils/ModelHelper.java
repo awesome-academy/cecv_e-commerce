@@ -1,4 +1,4 @@
-package com.example.cev_e_commerce.utils;
+package com.example.cecv_e_commerce.utils;
 
 import com.example.cecv_e_commerce.domain.dto.cart.CartItemDTO;
 import com.example.cecv_e_commerce.domain.dto.cart.CartResponseDTO;

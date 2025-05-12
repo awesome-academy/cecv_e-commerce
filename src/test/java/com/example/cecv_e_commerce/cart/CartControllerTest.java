@@ -1,4 +1,4 @@
-package com.example.cev_e_commerce.cart;
+package com.example.cecv_e_commerce.cart;
 
 import com.example.cecv_e_commerce.controller.CartController;
 import com.example.cecv_e_commerce.domain.dto.cart.CartItemRequestCreateDTO;
@@ -23,7 +23,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import static com.example.cev_e_commerce.utils.ModelHelper.createTestCartResponseDTO;
+import static com.example.cecv_e_commerce.utils.ModelHelper.createTestCartResponseDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

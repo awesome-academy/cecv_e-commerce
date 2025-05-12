@@ -1,6 +1,7 @@
 package com.example.cecv_e_commerce.config;
 
 import com.example.cecv_e_commerce.util.SecurityConstants;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,13 +75,24 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(eh -> eh
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+                )
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (Guess)
                         .requestMatchers(SecurityConstants.PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityConstants.PUBLIC_GET_ENDPOINTS).permitAll()
+
+                        // Explicitly permit GET reviews (for unauthenticated access)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**/reviews").permitAll()
+
+                        // Only authenticated USERs can POST reviews
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products/**/reviews").hasRole("USER")
+
                         // User endpoints (ROLE_USER)
                         .requestMatchers(SecurityConstants.USER_ENDPOINTS).hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/products/{productId}/reviews").hasRole("USER")
+
                         // Admin endpoints (ROLE_ADMIN)
                         .requestMatchers(SecurityConstants.ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .anyRequest().authenticated()
