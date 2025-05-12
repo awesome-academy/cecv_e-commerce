@@ -2,11 +2,16 @@ package com.example.cecv_e_commerce.service.impl;
 
 import com.example.cecv_e_commerce.domain.dto.product.ProductBriefDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductDetailDTO;
+import com.example.cecv_e_commerce.domain.dto.product.ProductRequestCreateDTO;
+import com.example.cecv_e_commerce.domain.dto.product.ProductRequestUpdateDTO;
+import com.example.cecv_e_commerce.domain.dto.product.ProductResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.category.CategoryDTO;
 import com.example.cecv_e_commerce.domain.dto.product.SearchProductRequestDTO;
+import com.example.cecv_e_commerce.exception.BadRequestException;
 import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.domain.model.Category;
 import com.example.cecv_e_commerce.domain.model.Product;
+import com.example.cecv_e_commerce.repository.CategoryRepository;
 import com.example.cecv_e_commerce.repository.ProductRepository;
 import com.example.cecv_e_commerce.service.ProductService;
 import jakarta.persistence.criteria.Join;
@@ -35,14 +40,14 @@ public class ProductServiceImpl implements ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
 
     @Override
     public Page<ProductBriefDTO> getFeaturedProducts(Pageable pageable) {
         logger.debug("Fetching featured products with pageable: {}", pageable);
         Page<Product> productPage = productRepository.findByFeaturedTrue(pageable);
-        List<ProductBriefDTO> dtos = productPage.getContent().stream()
-                .map(this::mapToBriefDTO)
+        List<ProductBriefDTO> dtos = productPage.getContent().stream().map(this::mapToBriefDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
     }
@@ -56,9 +61,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductBriefDTO> searchProducts(SearchProductRequestDTO criteria, Pageable pageable) {
-        logger.debug("Searching products with criteria - keyword: '{}', categoryId: {}, minPrice: {}, maxPrice: {}, pageable: {}",
-                criteria.getKeyword(), criteria.getCategoryId(), criteria.getMinPrice(), criteria.getMaxPrice(), pageable);
+    public Page<ProductBriefDTO> searchProducts(SearchProductRequestDTO criteria,
+            Pageable pageable) {
+        logger.debug(
+                "Searching products with criteria - keyword: '{}', categoryId: {}, minPrice: {}, maxPrice: {}, pageable: {}",
+                criteria.getKeyword(), criteria.getCategoryId(), criteria.getMinPrice(),
+                criteria.getMaxPrice(), pageable);
         Specification<Product> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -68,31 +76,79 @@ public class ProductServiceImpl implements ProductService {
 
             if (StringUtils.hasText(criteria.getKeyword())) {
                 String likePattern = "%" + criteria.getKeyword().toLowerCase() + "%";
-                Predicate namePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("name").as(String.class)), likePattern);
-                Predicate descriptionPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("description").as(String.class)), likePattern);
+                Predicate namePredicate = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("name").as(String.class)), likePattern);
+                Predicate descriptionPredicate = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("description").as(String.class)),
+                        likePattern);
                 predicates.add(criteriaBuilder.or(namePredicate, descriptionPredicate));
             }
 
             if (criteria.getCategoryId() != null) {
                 Join<Product, Category> categoryJoin = root.join("category", JoinType.LEFT);
-                predicates.add(criteriaBuilder.equal(categoryJoin.get("id"), criteria.getCategoryId()));
+                predicates.add(
+                        criteriaBuilder.equal(categoryJoin.get("id"), criteria.getCategoryId()));
             }
 
             if (criteria.getMinPrice() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), criteria.getMinPrice()));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"),
+                        criteria.getMinPrice()));
             }
 
             if (criteria.getMaxPrice() != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), criteria.getMaxPrice()));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"),
+                        criteria.getMaxPrice()));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         Page<Product> productPage = productRepository.findAll(spec, pageable);
         logger.debug("Found {} products matching criteria.", productPage.getTotalElements());
-        List<ProductBriefDTO> dtos = productPage.getContent().stream()
-                .map(this::mapToBriefDTO)
+        List<ProductBriefDTO> dtos = productPage.getContent().stream().map(this::mapToBriefDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, productPage.getTotalElements());
+    }
+
+    @Override
+    @Transactional()
+    public ProductResponseDTO createProduct(ProductRequestCreateDTO productRequestCreateDTO) {
+        Category category = categoryRepository.findById(productRequestCreateDTO.getCategoryId())
+                .orElseThrow(() -> new BadRequestException("Category not found"));
+
+        Product product = new Product();
+        product.setName(productRequestCreateDTO.getName());
+        product.setDescription(productRequestCreateDTO.getDescription());
+        product.setPrice(productRequestCreateDTO.getPrice());
+        product.setQuantity(productRequestCreateDTO.getQuantity());
+        product.setCategory(category);
+
+        product = productRepository.save(product);
+        return modelMapper.map(product, ProductResponseDTO.class);
+    }
+
+    @Override
+    @Transactional()
+    public ProductResponseDTO updateProduct(Integer productId,
+            ProductRequestUpdateDTO productRequestUpdateDTO) {
+        Category category = categoryRepository.findById(productRequestUpdateDTO.getCategoryId())
+                .orElseThrow(() -> new BadRequestException("Category not found"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+
+        product.setName(productRequestUpdateDTO.getName());
+        product.setDescription(productRequestUpdateDTO.getDescription());
+        product.setPrice(productRequestUpdateDTO.getPrice());
+        product.setQuantity(productRequestUpdateDTO.getQuantity());
+        product.setCategory(category);
+
+        product = productRepository.save(product);
+        return modelMapper.map(product, ProductResponseDTO.class);
+    }
+
+    @Override
+    @Transactional()
+    public void deleteProduct(Integer productId) {
+        productRepository.deleteById(productId);
     }
 
     private ProductBriefDTO mapToBriefDTO(Product product) {
