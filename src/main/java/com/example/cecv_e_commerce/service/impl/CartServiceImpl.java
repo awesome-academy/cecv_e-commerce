@@ -1,24 +1,25 @@
 package com.example.cecv_e_commerce.service.impl;
 
-import java.util.stream.Collectors;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import lombok.*;
-import com.example.cecv_e_commerce.domain.dto.cart.CartResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.cart.CartItemDTO;
 import com.example.cecv_e_commerce.domain.dto.cart.CartItemRequestCreateDTO;
 import com.example.cecv_e_commerce.domain.dto.cart.CartItemRequestUpdateDTO;
+import com.example.cecv_e_commerce.domain.dto.cart.CartResponseDTO;
 import com.example.cecv_e_commerce.domain.dto.product.ProductDTO;
 import com.example.cecv_e_commerce.domain.model.Cart;
 import com.example.cecv_e_commerce.domain.model.CartItem;
 import com.example.cecv_e_commerce.domain.model.Product;
 import com.example.cecv_e_commerce.domain.model.User;
+import com.example.cecv_e_commerce.exception.BadRequestException;
+import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.repository.CartRepository;
 import com.example.cecv_e_commerce.repository.ProductRepository;
-import com.example.cecv_e_commerce.exception.ResourceNotFoundException;
 import com.example.cecv_e_commerce.service.CartService;
-import com.example.cecv_e_commerce.exception.BadRequestException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -110,7 +111,11 @@ public class CartServiceImpl implements CartService {
 
 
     private User getCurrentUser() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        User user = (User) authentication.getPrincipal();
         if (user == null) {
             throw new ResourceNotFoundException("User not found");
         }
