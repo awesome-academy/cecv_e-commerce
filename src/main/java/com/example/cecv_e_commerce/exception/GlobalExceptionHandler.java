@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,5 +69,18 @@ public class GlobalExceptionHandler {
         logger.error("An unexpected error occurred: ", ex);
         ApiResponse apiResponse = new ApiResponse(false, "An unexpected internal server error occurred.", null);
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String propertyPath = violation.getPropertyPath().toString();
+            String fieldName = propertyPath.substring(propertyPath.lastIndexOf('.') + 1);
+            errors.put(fieldName, violation.getMessage());
+        }
+        logger.warn("Constraint violation error: {}", errors);
+        ApiResponse apiResponse = new ApiResponse(false, "Validation Failed", errors);
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 }
